@@ -1,38 +1,37 @@
-from django.contrib import admin
-from django.urls import path, include, re_path
-from django.views.generic import RedirectView  # Required for your root redirect
-from django.conf.urls.static import static
-from django.conf import settings
-from django.views.static import serve
+# catalog/urls.py
+from django.urls import path
+from . import views
+
+app_name = 'catalog'
 
 urlpatterns = [
-    # 1. Admin site URL
-    path('admin/', admin.site.urls),
-    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}), #serve media files when deployed
-    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}), #serve static files when deployed
+    # Index/Home Page
+    path('', views.index, name='index'),
 
-    # 2. Registration App URLs (e.g., /register/signup/)
-    path('register/', include('register.urls')),
+    # List Views
+    path('books/', views.BookListView.as_view(), name='books'),
+    path('authors/', views.AuthorListView.as_view(), name='authors'),
 
-    # 3. Catalog app URLs
-    path('catalog/', include('catalog.urls')),
+    # Detail Views
+    path('book/<int:pk>/', views.BookDetailView.as_view(), name='book_detail'),
+    path('author/<int:pk>/', views.AuthorDetailView.as_view(), name='author_detail'),
 
-    # 4. Redirect the base URL (e.g., mysite.com/) to /catalog/
-    path('', RedirectView.as_view(url='catalog/', permanent=True)),
+    # User Borrowed Books
+    path('my_books/', views.LoanedBooksByUserListView.as_view(), name='my-borrowed'),
 
-    # 5. Built-in Authentication URLs (login, logout, password reset)
-    path('accounts/', include('django.contrib.auth.urls')),
+    # Author CRUD
+    path('author/create/', views.AuthorCreate.as_view(), name='author_create'),
+    path('author/<int:pk>/update/', views.AuthorUpdate.as_view(), name='author_update'),
+    path('author/<int:pk>/delete/', views.AuthorDelete.as_view(), name='author_delete'),
 
-    # Removed the duplicate 'path('', include('register.urls')),' which was conflicting.
-]+ static(settings.MEDIA_URL,
-document_root=settings.MEDIA_ROOT)
+    # Book CRUD
+    path('book/create/', views.BookCreate.as_view(), name='book_create'),
+    path('book/<int:pk>/update/', views.BookUpdate.as_view(), name='book_update'),
+    path('book/<int:pk>/delete/', views.BookDelete.as_view(), name='book_delete'),
 
+    # Loan Book
+    path('book/<int:pk>/loan/', views.loan_book_librarian, name='loan_book_librarian'),
 
-# Add URL patterns to serve static and media files ONLY when in development (DEBUG mode).
-# This is the correct and standard way to serve these files locally.
-if settings.DEBUG:
-    # 6. Serve static files (styles, scripts, etc.)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
-    # 7. Serve media files (user-uploaded images)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # Available Books
+    path('books/available/', views.AvailBooksListView.as_view(), name='all_available'),
+]
