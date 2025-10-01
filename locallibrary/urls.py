@@ -3,6 +3,8 @@ from django.urls import path, include, re_path
 from django.views.generic import RedirectView  # Required for your root redirect
 from django.conf.urls.static import static
 from django.conf import settings
+from django.views.static import serve
+
 urlpatterns = [
     # 1. Admin site URL
     path('admin/', admin.site.urls),
